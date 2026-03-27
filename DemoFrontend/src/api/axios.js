@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://demoproject-vhvc.onrender.com",
+  baseURL: "https://demoproject-vhvc.onrender.com/api",
 });
 
 // request interceptor (auto token)
