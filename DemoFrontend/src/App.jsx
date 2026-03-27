@@ -7,6 +7,11 @@ import Login from "./pages/Login";
 
 function App() {
   return (
+
+    <>
+    <div className="bg-red-500 text-white p-5">
+  TEST TAILWIND
+</div>
     <BrowserRouter>
       <Routes>
         {/* Public Route */}
@@ -26,6 +31,7 @@ function App() {
         />
       </Routes>
     </BrowserRouter>
+    </>
   );
 }
 
