@@ -1,0 +1,16 @@
+# Backend
+DemoBackend/.env
+
+# Frontend
+DemoFrontend/.env
+
+# Node modules
+DemoBackend/node_modules/
+DemoFrontend/node_modules/
+
+# Frontend build output
+frontend/build/
+
+
+# Ignore all .env files in the project
+**/.env

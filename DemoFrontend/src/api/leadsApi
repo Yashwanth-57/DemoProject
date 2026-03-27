@@ -1,0 +1,25 @@
+import axiosInstance from "./axios";
+
+// GET all leads
+export const getLeads = async () => {
+  const res = await axiosInstance.get("/leads");
+  return res.data;
+};
+
+// CREATE lead
+export const createLead = async (leadData) => {
+  const res = await axiosInstance.post("/leads", leadData);
+  return res.data;
+};
+
+// UPDATE lead
+export const updateLead = async (id, leadData) => {
+  const res = await axiosInstance.put(`/leads/${id}`, leadData);
+  return res.data;
+};
+
+// DELETE lead
+export const deleteLead = async (id) => {
+  const res = await axiosInstance.delete(`/leads/${id}`);
+  return res.data;
+};
