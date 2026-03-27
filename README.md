@@ -26,6 +26,83 @@ Other:
 - Vercel (Frontend)
 - Render (Backend)
 
+
+
+---------------------------------------------------------------------------------
+
+
+##  Frontend Architecture
+
+The frontend is built using **React (Vite)** with a clean and modular structure for scalability and maintainability.
+
+---
+##  Frontend Structure
+
+
+frontend/
+│
+├── src/
+│ ├── api/ # API layer (Axios instances & endpoints)
+│ │ ├── axiosInstance.js
+│ │ ├── authApi.js
+│ │ ├── leadsApi.js
+│ │ └── taskApi.js
+│ │
+│ ├── pages/ # Application pages
+│ │ ├── Login.jsx
+│ │ ├── Register.jsx
+│ │ ├── Dashboard.jsx
+│ │ └── Home.jsx
+│ │
+│ ├── components/ # Reusable UI components
+│ │ └── Navbar.jsx
+│ │
+│ ├── routes/protechtedRoute
+│ ├── App.jsx # Main routing setup
+│ └── main.jsx # Entry point
+│
+└── package.json
+
+
+
+##  API Handling (Axios)
+
+- Created a centralized **Axios instance** (`axiosInstance.js`)
+- Configured with:
+  - Base URL for backend API
+  - Request interceptor → attaches JWT token automatically
+  - Response interceptor → handles errors (like 401 unauthorized)
+
+###  Interceptors Usage
+
+- Automatically adds token in headers:
+
+Authorization: Bearer <token>
+
+- Handles session expiry:
+- On 401 → clears token and redirects to login
+
+---
+
+##  API Layer Design
+
+- Each feature has its own API file:
+- `authApi.js`
+- `leadsApi.js`
+- `taskApi.js`
+
+- Keeps API logic separate from UI  
+- Improves code readability and maintainability  
+
+---
+
+##  Routing (React Router)
+
+- Implemented client-side routing using React Router
+- Pages include:
+
+
+
 --------------------------------------------------------------------------------------------
 
 ##  Backend Architecture (Monolithic Structure) and ##  Backend Design Highlights
