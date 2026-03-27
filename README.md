@@ -293,7 +293,7 @@ DELETE /api/tasks/:id
 ##  Future Improvements
 
 - ## redux for user login information
-- ##  redux saga fro the crud opration of tasks an leads
+- ##  redux saga for the crud opration of tasks and leads
 - Add pagination
 - Add search & filters
 - Add role-based access
