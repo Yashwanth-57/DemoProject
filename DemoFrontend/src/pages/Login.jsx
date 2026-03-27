@@ -46,7 +46,10 @@ export default function Login() {
     const validationErrors = validate(form);
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length > 0) return;
+    if (Object.keys(validationErrors).length > 0) {
+  toast.error("Please fill all fields correctly");
+  return;
+}
 
     try {
       setLoading(true);
@@ -106,7 +109,7 @@ export default function Login() {
         {/* BUTTON */}
         <button
           onClick={handleLogin}
-          disabled={Object.keys(validate(form)).length > 0}
+         disabled={loading}
         
   className={`w-full p-3 rounded text-white transition ${
     loading

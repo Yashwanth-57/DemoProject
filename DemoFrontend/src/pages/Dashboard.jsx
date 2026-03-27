@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import toast from "react-hot-toast";
 
-
-import { getLeads, createLead, updateLead, deleteLead  } from "../api/leadsApi";
+import { getLeads, createLead, updateLead, deleteLead } from "../api/leadsApi";
 import { createTask, getTasks, updateTask, deleteTask } from "../api/taskApi";
 
 export default function Dashboard() {
   const [loadingLeads, setLoadingLeads] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
+
+  const [addingLead, setAddingLead] = useState(false);
+  const [addingTask, setAddingTask] = useState(false);
+  const [deletingLeadId, setDeletingLeadId] = useState(null);
+  const [deletingTaskId, setDeletingTaskId] = useState(null);
 
   const [leads, setLeads] = useState([]);
   const [newLead, setNewLead] = useState({ name: "", status: "New" });
@@ -20,7 +24,6 @@ export default function Dashboard() {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // FETCH LEADS
   useEffect(() => {
     fetchLeads();
     fetchTasks();
@@ -38,42 +41,6 @@ export default function Dashboard() {
     }
   };
 
-  // CRUD LEADS
-  const handleAddLead = async () => {
-    if (!newLead.name.trim()) return toast.error("Name required");
-    try {
-      const lead = await createLead(newLead);
-      setLeads([lead, ...leads]);
-      setNewLead({ name: "", status: "New" });
-      toast.success("Lead added");
-    } catch (err) {
-      toast.error("Failed to add lead");
-    }
-  };
-
-  const handleUpdateLead = async (id) => {
-    if (!editingLead.name.trim()) return toast.error("Name required");
-    try {
-      const updated = await updateLead(id, editingLead);
-      setLeads(leads.map((l) => (l._id === id ? updated : l)));
-      setEditingLead(null);
-      toast.success("Lead updated");
-    } catch (err) {
-      toast.error("Failed to update lead");
-    }
-  };
-
-  const handleDeleteLead = async (id) => {
-    try {
-      await deleteLead(id);
-      setLeads(leads.filter((l) => l._id !== id));
-      toast.success("Lead deleted");
-    } catch (err) {
-      toast.error("Failed to delete lead");
-    }
-  };
-
-  // FETCH TASKS
   const fetchTasks = async () => {
     try {
       setLoadingTasks(true);
@@ -86,21 +53,67 @@ export default function Dashboard() {
     }
   };
 
-  // CRUD TASKS
+  const handleAddLead = async () => {
+    if (!newLead.name.trim()) return toast.error("Name required");
+
+    try {
+      setAddingLead(true);
+      const lead = await createLead(newLead);
+      setLeads([lead, ...leads]);
+      setNewLead({ name: "", status: "New" });
+      toast.success("Lead added");
+    } catch (err) {
+      toast.error("Failed to add lead");
+    } finally {
+      setAddingLead(false);
+    }
+  };
+
+  const handleUpdateLead = async (id) => {
+    if (!editingLead.name.trim()) return toast.error("Name required");
+
+    try {
+      const updated = await updateLead(id, editingLead);
+      setLeads(leads.map((l) => (l._id === id ? updated : l)));
+      setEditingLead(null);
+      toast.success("Lead updated");
+    } catch (err) {
+      toast.error("Failed to update lead");
+    }
+  };
+
+  const handleDeleteLead = async (id) => {
+    try {
+      setDeletingLeadId(id);
+      await deleteLead(id);
+      setLeads(leads.filter((l) => l._id !== id));
+      toast.success("Lead deleted");
+    } catch (err) {
+      toast.error("Failed to delete lead");
+    } finally {
+      setDeletingLeadId(null);
+    }
+  };
+
   const handleAddTask = async () => {
     if (!newTask.title.trim()) return toast.error("Title required");
+
     try {
+      setAddingTask(true);
       const task = await createTask(newTask);
       setTasks([task, ...tasks]);
       setNewTask({ title: "", status: "Pending" });
       toast.success("Task added");
     } catch (err) {
       toast.error("Failed to add task");
+    } finally {
+      setAddingTask(false);
     }
   };
 
   const handleUpdateTask = async (id) => {
     if (!editingTask.title.trim()) return toast.error("Title required");
+
     try {
       const updated = await updateTask(id, editingTask);
       setTasks(tasks.map((t) => (t._id === id ? updated : t)));
@@ -113,26 +126,40 @@ export default function Dashboard() {
 
   const handleDeleteTask = async (id) => {
     try {
+      setDeletingTaskId(id);
       await deleteTask(id);
       setTasks(tasks.filter((t) => t._id !== id));
       toast.success("Task deleted");
     } catch (err) {
       toast.error("Failed to delete task");
+    } finally {
+      setDeletingTaskId(null);
     }
   };
+
+  // FULL PAGE LOADING
+  if (loadingLeads || loadingTasks) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-purple-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
+
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-2">
           Welcome, {user?.name || "User"} 👋
         </h1>
         <p className="text-gray-600 mb-6">Here is your dashboard overview</p>
 
-        {/* ================= LEADS ================= */}
+        {/* LEADS */}
         <div className="bg-white p-4 rounded-xl shadow mb-6">
           <h2 className="text-xl font-semibold mb-3">Leads</h2>
+
           <div className="flex gap-2 mb-4 flex-wrap">
             <input
               className="border p-2 flex-1 rounded"
@@ -153,17 +180,17 @@ export default function Dashboard() {
               <option>Contacted</option>
               <option>Qualified</option>
             </select>
+
             <button
               onClick={handleAddLead}
-              className="bg-purple-600 text-white px-4 rounded hover:bg-purple-700"
+              disabled={addingLead}
+              className="bg-purple-600 text-white px-4 rounded disabled:opacity-50"
             >
-              Add
+              {addingLead ? "Adding..." : "Add"}
             </button>
           </div>
 
-          {loadingLeads ? (
-            <p>Loading...</p>
-          ) : leads.length === 0 ? (
+          {leads.length === 0 ? (
             <p>No leads yet</p>
           ) : (
             <div className="space-y-2">
@@ -185,7 +212,10 @@ export default function Dashboard() {
                         className="border p-1 rounded"
                         value={editingLead.status}
                         onChange={(e) =>
-                          setEditingLead({ ...editingLead, status: e.target.value })
+                          setEditingLead({
+                            ...editingLead,
+                            status: e.target.value,
+                          })
                         }
                       >
                         <option>New</option>
@@ -222,7 +252,9 @@ export default function Dashboard() {
                           onClick={() => handleDeleteLead(lead._id)}
                           className="text-red-600 px-2"
                         >
-                          Delete
+                          {deletingLeadId === lead._id
+                            ? "Deleting..."
+                            : "Delete"}
                         </button>
                       </div>
                     </>
@@ -233,9 +265,10 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* ================= TASKS ================= */}
+        {/* TASKS */}
         <div className="bg-white p-4 rounded-xl shadow mb-6">
           <h2 className="text-xl font-semibold mb-3">Tasks</h2>
+
           <div className="flex gap-2 mb-4 flex-wrap">
             <input
               className="border p-2 flex-1 rounded"
@@ -255,17 +288,17 @@ export default function Dashboard() {
               <option>Pending</option>
               <option>Completed</option>
             </select>
+
             <button
               onClick={handleAddTask}
-              className="bg-green-600 text-white px-4 rounded hover:bg-green-700"
+              disabled={addingTask}
+              className="bg-green-600 text-white px-4 rounded disabled:opacity-50"
             >
-              Add
+              {addingTask ? "Adding..." : "Add"}
             </button>
           </div>
 
-          {loadingTasks ? (
-            <p>Loading...</p>
-          ) : tasks.length === 0 ? (
+          {tasks.length === 0 ? (
             <p>No tasks yet</p>
           ) : (
             <div className="space-y-2">
@@ -280,14 +313,20 @@ export default function Dashboard() {
                         className="border p-1 rounded flex-1"
                         value={editingTask.title}
                         onChange={(e) =>
-                          setEditingTask({ ...editingTask, title: e.target.value })
+                          setEditingTask({
+                            ...editingTask,
+                            title: e.target.value,
+                          })
                         }
                       />
                       <select
                         className="border p-1 rounded"
                         value={editingTask.status}
                         onChange={(e) =>
-                          setEditingTask({ ...editingTask, status: e.target.value })
+                          setEditingTask({
+                            ...editingTask,
+                            status: e.target.value,
+                          })
                         }
                       >
                         <option>Pending</option>
@@ -323,7 +362,9 @@ export default function Dashboard() {
                           onClick={() => handleDeleteTask(task._id)}
                           className="text-red-600 px-2"
                         >
-                          Delete
+                          {deletingTaskId === task._id
+                            ? "Deleting..."
+                            : "Delete"}
                         </button>
                       </div>
                     </>
